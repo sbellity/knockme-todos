@@ -57,9 +57,9 @@ class AppView extends KnockMe.ViewModel
     @todos.filter (todo)-> !todo.done()
   
   createTodo: (e)->
-    return if e.keyCode != 13 || content.length == 0
     content = $(e.currentTarget).val()
-    @collection.create({ content: content, order: Todos.nextOrder() })
+    return if e.keyCode != 13 || content.length == 0
+    @collection.create({ content: content, order: @collection.nextOrder() })
     $(e.currentTarget).val("")
     
   clearDone: ->

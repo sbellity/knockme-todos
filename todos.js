@@ -98,13 +98,13 @@
     };
     AppView.prototype.createTodo = function(e) {
       var content;
+      content = $(e.currentTarget).val();
       if (e.keyCode !== 13 || content.length === 0) {
         return;
       }
-      content = $(e.currentTarget).val();
       this.collection.create({
         content: content,
-        order: Todos.nextOrder()
+        order: this.collection.nextOrder()
       });
       return $(e.currentTarget).val("");
     };
