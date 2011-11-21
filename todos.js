@@ -1,135 +1,129 @@
-// An example KnockMe application contributed by
-// [Jérôme Gravel-Niquet](http://jgn.me/). This demo uses a simple
-// [LocalStorage adapter](backbone-localstorage.html)
-// to persist Backbone models within your browser.
-
-// Load the application once the DOM is ready, using `jQuery.ready`:
-$(function(){
-
-  // Todo Model
-  // ----------
-
-  // Our basic **Todo** model has `content`, `order`, and `done` attributes.
-  window.Todo = KnockMe.Model.extend({
-
-    // Default attributes for the todo.
-    defaults: {
-      content: "empty todo...",
+(function() {
+  var AppView, Todo, TodoList, TodoView;
+  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+    function ctor() { this.constructor = child; }
+    ctor.prototype = parent.prototype;
+    child.prototype = new ctor;
+    child.__super__ = parent.prototype;
+    return child;
+  };
+  Todo = (function() {
+    __extends(Todo, KnockMe.Model);
+    function Todo() {
+      Todo.__super__.constructor.apply(this, arguments);
+    }
+    Todo.prototype.defaults = {
       done: false
-    },
-
-    // Ensure that each todo created has `content`.
-    initialize: function() {
-      if (!this.get("content")) {
-        this.set({"content": this.defaults.content});
-      }
-    },
-
-    // Toggle the `done` state of this todo item.
-    toggle: function() {
-      this.save({done: !this.get("done")});
+    };
+    Todo.prototype.toggle = function() {
+      return this.save({
+        done: !this.get("done")
+      });
+    };
+    return Todo;
+  })();
+  TodoList = (function() {
+    __extends(TodoList, KnockMe.Collection);
+    function TodoList() {
+      TodoList.__super__.constructor.apply(this, arguments);
     }
-    
-  });
-
-  // Todo Collection
-  // ---------------
-
-  // The collection of todos is backed by *localStorage* instead of a remote
-  // server.
-  window.TodoList = KnockMe.Collection.extend({
-
-    // Reference to this collection's model.
-    model: Todo,
-    
-    // Save all of the todo items under the `"todos"` namespace.
-    localStorage: new Store("todos"),
-    
-    // We keep the Todos in sequential order, despite being saved by unordered
-    // GUID in the database. This generates the next order number for new items.
-    nextOrder: function() {
-      if (!this.length) return 1;
+    TodoList.prototype.model = Todo;
+    TodoList.prototype.localStorage = new Store("todos");
+    TodoList.prototype.nextOrder = function() {
+      if (!this.length) {
+        return 1;
+      }
       return this.last().get('order') + 1;
-    },
-    
-    // Todos are sorted by their original insertion order.
-    comparator: function(todo) {
+    };
+    TodoList.prototype.comparator = function(todo) {
       return todo.get('order');
+    };
+    return TodoList;
+  })();
+  TodoView = (function() {
+    __extends(TodoView, KnockMe.ViewModel);
+    function TodoView() {
+      TodoView.__super__.constructor.apply(this, arguments);
     }
-    
-  });
-  
-  // Create our global collection of **Todos**.
-  window.Todos = new TodoList();
-  
-  window.TodoViewModel = KnockMe.ViewModel.extend({
-    
-    initialize: function() {},
-    
-    doneStatus: function() {
-      return this.done() ? "done" : ""
-    },
-    
-    clear: function() {
-      this.model.destroy();
-    },
-    
-    edit: function(e) {
-      $(this.el).addClass("editing");
-      $(".todo-input", e.currentTarget).focus();
-    },
-    
-    save: function(val) {
-      this.model.save({content: val});
-      $(this.el).removeClass("editing");
-    },
-    
-    // If you hit `enter`, we're through editing the item.
-    updateOnEnter: function(e) {
-      if (e.keyCode == 13) this.save($(e.currentTarget).val());
-    },
-    
-    toggleDone: function() {
-      this.model.toggle();
-    }
-  });
-  
-  window.AppViewModel = KnockMe.ViewModel.extend({
-    
-    todos: window.TodoViewModel,
-    
-    doneItems: function() {
-      return this.todos.filter(function(todo){ return todo.done(); });
-    },
-    
-    remainingItems: function() {
-      return this.todos.filter(function(todo){ return !todo.done(); });
-    },
-    
-    createTodo: function(e) {
-      var content = $(e.currentTarget).val()
-      if (e.keyCode == 13 && content.length > 0) {
-        order = Todos.nextOrder();
-        this.collection.create({ content: content, order: order });
-        $(e.currentTarget).val("");
+    TodoView.prototype.doneStatus = function() {
+      if (this.done()) {
+        return "done";
       }
-    },
-    
-    clearDone: function() {
-      _.each(this.doneItems(), function(i) { i.model.destroy(); });
-    },
-    
-    wtf: function(el, vm) {
-      vm.el = el[1]; // TODO: try to find a way to get rid of that shit ?
+    };
+    TodoView.prototype.clear = function() {
+      return this.model.destroy();
+    };
+    TodoView.prototype.edit = function(e) {
+      $(this.el).addClass("editing");
+      return $(".todo-input", e.currentTarget).focus();
+    };
+    TodoView.prototype.save = function(val) {
+      this.model.save({
+        content: val
+      });
+      return $(this.el).removeClass("editing");
+    };
+    TodoView.prototype.updateOnEnter = function(e) {
+      var val;
+      if (e.keyCode !== 13) {
+        return;
+      }
+      val = $(e.currentTarget).val();
+      return this.save(val);
+    };
+    TodoView.prototype.toggleDone = function() {
+      return this.model.toggle();
+    };
+    return TodoView;
+  })();
+  AppView = (function() {
+    __extends(AppView, KnockMe.ViewModel);
+    function AppView() {
+      AppView.__super__.constructor.apply(this, arguments);
     }
-    
+    AppView.prototype.todos = TodoView;
+    AppView.prototype.initialize = function() {
+      return this.collection.fetch();
+    };
+    AppView.prototype.doneItems = function() {
+      return this.todos.filter(function(todo) {
+        return todo.done();
+      });
+    };
+    AppView.prototype.remainingItems = function() {
+      return this.todos.filter(function(todo) {
+        return !todo.done();
+      });
+    };
+    AppView.prototype.createTodo = function(e) {
+      var content;
+      if (e.keyCode !== 13 || content.length === 0) {
+        return;
+      }
+      content = $(e.currentTarget).val();
+      this.collection.create({
+        content: content,
+        order: Todos.nextOrder()
+      });
+      return $(e.currentTarget).val("");
+    };
+    AppView.prototype.clearDone = function() {
+      return _.each(this.doneItems(), function(i) {
+        return i.model.destroy();
+      });
+    };
+    AppView.prototype.wtf = function(el, vm) {
+      return vm.el = el[1];
+    };
+    return AppView;
+  })();
+  $(function() {
+    window.App = new AppView({
+      el: '#todoapp',
+      collection: new TodoList,
+      collection_name: 'todos'
+    });
+    return window.App.render();
   });
-  
-  Todos.fetch();
-  
-  window.viewModel = new AppViewModel({ collection: Todos, collection_name: "todos" });
-  
-  window.App = new KnockMe.View({ model: viewModel, el: '#todoapp' });
-  window.App.render();
-
-});
+}).call(this);
