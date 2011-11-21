@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>Knockit.js</title>
+    <link href="./css/todos.css" media="all" rel="stylesheet" type="text/css"/>
+    <script src="./vendors/json2.js"></script>
+    <script src="./vendors/jquery.js"></script>
+    <script src="./vendors/underscore.js"></script>
+    <script src="./vendors/backbone.js"></script>
+    <script src="./vendors/backbone-localstorage.js"></script>
+    <script src="./vendors/knockout-1.3.0.beta.debug.js"></script>
+    <script src="./lib/knockme.js"></script>
+    <script src="./todos.js"></script>
+  </head>
+
+  <body>
+
+    <div id="todoapp">
+
+      <div class="title">
+        <h1>Todos</h1>
+      </div>
+
+      <div class="content">
+
+        <div id="create-todo">
+          <input id="new-todo" placeholder="What needs to be done?" type="text" data-bind="event: { keyup: createTodo }"/>
+          <span class="ui-tooltip-top" style="display:none;">Press Enter to save this task</span>
+        </div>
+
+        <div id="todos">
+          <ul id="todo-list" data-bind="template: { name: 'item-template', foreach: todos, afterRender: wtf }"></ul>
+        </div>
+
+        <div id="todo-stats">
+          <span class="todo-count">
+            <span class="number" data-bind="text: remainingItems().length"></span>
+            <span> items left.</span>
+          </span>
+          <span class="todo-clear" data-bind="visible: doneItems().length > 0">
+            <a href="#" data-bind="click: clearDone">
+              Clear <span class="number-done"  data-bind="text: doneItems().length"></span>
+              completed.
+            </a>
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <div id="credits">
+      Created by
+      <br />
+      <a href="http://jgn.me/">J&eacute;r&ocirc;me Gravel-Niquet</a>. <br />KnockMe Version : <a href="http://github.com/sbellity">Stephane Bellity</a>.
+    </div>
+
+    <!-- Templates -->
+
+    <script type="text/template" id="item-template">
+      <li data-bind="event: { dblclick: edit }">
+        <div data-bind="attr : { class: 'todo ' + doneStatus() }">
+          <div class="display">
+            <input class="check" type="checkbox" data-bind="click: toggleDone, checked: done()" />
+            <div class="todo-content" data-bind="text: content"></div>
+            <span class="todo-destroy" data-bind="click: clear"></span>
+          </div>
+          <div class="edit">
+            <input class="todo-input" type="text" value="" data-bind="event: { keyup: updateOnEnter }, value: content" />
+          </div>
+        </div>
+      </li>
+    </script>
+  </body>
+
+</html>
